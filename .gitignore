@@ -1,6 +1,6 @@
 node_modules
 combined.log
 error.log
-.env
+dotenv
 package-lock.json
 testPost.js 
