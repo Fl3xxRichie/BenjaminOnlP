@@ -18,22 +18,32 @@ export class TwitterClient {
   async post(content) {
     try {
       if (!this.canPost()) {
-        logger.warn('Daily post limit reached or too soon since last post');
+        logger.warn('Post restricted', {
+          reason: this.postCount >= config.maxDailyPosts ? 'Daily limit reached' : 'Minimum interval not met',
+          dailyPosts: `${this.postCount}/${config.maxDailyPosts}`
+        });
         return false;
       }
 
       if (content.length > config.characterLimit) {
-        logger.error('Content exceeds character limit');
+        logger.error('Content validation failed', {
+          error: 'Character limit exceeded',
+          length: content.length,
+          limit: config.characterLimit
+        });
         return false;
       }
 
       await this.client.v2.tweet(content);
       this.updatePostMetrics();
       
-      logger.info('Successfully posted tweet', { content });
+      logger.post('Tweet posted successfully', { content });
       return true;
     } catch (error) {
-      logger.error('Error posting tweet', { error: error.message, content });
+      logger.error('Twitter API error', { 
+        error: error.message,
+        content
+      });
       return false;
     }
   }
@@ -41,12 +51,10 @@ export class TwitterClient {
   canPost() {
     const now = Date.now();
     
-    // Check daily limit
     if (this.postCount >= config.maxDailyPosts) {
       return false;
     }
 
-    // Check minimum interval
     if (this.lastPostTime && 
         (now - this.lastPostTime) < config.postingIntervals.min) {
       return false;
@@ -59,12 +67,12 @@ export class TwitterClient {
     this.postCount++;
     this.lastPostTime = Date.now();
 
-    // Reset post count at midnight
     const midnight = new Date();
     midnight.setHours(24, 0, 0, 0);
     const timeUntilMidnight = midnight - new Date();
     
     setTimeout(() => {
+      logger.info('Daily post count reset');
       this.postCount = 0;
     }, timeUntilMidnight);
   }

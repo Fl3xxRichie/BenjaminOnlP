@@ -1,6 +1,7 @@
 import { topics } from './config.js';
 import { GeminiService } from './services/geminiService.js';
 import { ContentFormatter } from './services/contentFormatter.js';
+import { logger } from './logger.js';
 
 export class ContentGenerator {
   constructor() {
@@ -10,19 +11,54 @@ export class ContentGenerator {
   }
 
   async init() {
-    await this.geminiService.init();
+    try {
+      await this.geminiService.init();
+      return true;
+    } catch (error) {
+      logger.error('Failed to initialize content generator', { error: error.message });
+      return false;
+    }
   }
 
   async generatePost(promptName = 'default') {
-    const topic = this.getRandomTopic();
-    const content = await this.geminiService.generateContent(topic, promptName);
-    const formattedPost = this.formatter.formatPost(content);
-    
-    if (!this.formatter.validateLength(formattedPost)) {
-      throw new Error('Generated content exceeds character limit');
+    try {
+      // Try up to 3 times to generate valid content
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        logger.debug(`Generation attempt ${attempt}/3`);
+        
+        const topic = this.getRandomTopic();
+        const rawContent = await this.geminiService.generateContent(topic);
+        
+        if (!rawContent) {
+          logger.warn('No content generated, retrying...');
+          continue;
+        }
+
+        // Pre-format check
+        if (rawContent.length > 160) { // Leave room for tags
+          logger.debug('Raw content too long, retrying...', {
+            length: rawContent.length,
+            content: rawContent
+          });
+          continue;
+        }
+
+        const formattedPost = this.formatter.formatPost(rawContent);
+        
+        if (this.formatter.validateLength(formattedPost)) {
+          logger.debug('Valid post generated', {
+            length: formattedPost.length,
+            content: formattedPost
+          });
+          return formattedPost;
+        }
+      }
+
+      throw new Error('Failed to generate valid content after 3 attempts');
+    } catch (error) {
+      logger.error('Content generation failed', { error: error.message });
+      throw error;
     }
-    
-    return formattedPost;
   }
 
   getRandomTopic() {
@@ -34,13 +70,5 @@ export class ContentGenerator {
     const topic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
     this.usedTopics.add(topic);
     return topic;
-  }
-
-  async addCustomPrompt(name, prompt) {
-    return await this.geminiService.addCustomPrompt(name, prompt);
-  }
-
-  listPrompts() {
-    return this.geminiService.listPrompts();
   }
 }

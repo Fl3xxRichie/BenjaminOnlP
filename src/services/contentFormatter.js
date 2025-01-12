@@ -1,23 +1,80 @@
 import { config } from '../config.js';
+import { logger } from '../logger.js';
 
 export class ContentFormatter {
   formatPost(content) {
+    // First, clean and trim the content
+    let cleanContent = this.cleanContent(content);
+    
+    // Get tags
+    const tags = this.getPostTags();
+    
+    // Calculate available space
+    const tagsLength = tags.join(' ').length;
+    const maxContentLength = config.characterLimit - tagsLength - 1; // -1 for space before tags
+    
+    // Trim content if needed
+    if (cleanContent.length > maxContentLength) {
+      cleanContent = cleanContent.substring(0, maxContentLength - 3) + '...';
+      logger.debug('Content trimmed to fit character limit', {
+        originalLength: content.length,
+        newLength: cleanContent.length,
+        limit: maxContentLength
+      });
+    }
+
+    // Combine content with tags
+    const formattedPost = `${cleanContent} ${tags.join(' ')}`.trim();
+    
+    logger.debug('Post formatted', {
+      contentLength: cleanContent.length,
+      tagsLength,
+      totalLength: formattedPost.length,
+      limit: config.characterLimit
+    });
+
+    return formattedPost;
+  }
+
+  cleanContent(content) {
+    return content
+      .replace(/[\n\r]+/g, ' ') // Replace newlines with spaces
+      .replace(/\s+/g, ' ')     // Replace multiple spaces with single space
+      .replace(/[""]/g, '"')    // Normalize quotes
+      .trim();
+  }
+
+  getPostTags() {
     const { required, optional } = config.tags;
     
     // Always include required tags
     let tags = [...required];
     
-    // Add 1-2 random optional tags
-    const randomOptional = optional
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
+    // Add 1-2 random optional tags if there's space
+    const remainingSpace = config.characterLimit - tags.join(' ').length;
     
-    tags = [...tags, ...randomOptional];
+    if (remainingSpace > 20) { // Only add if we have enough space
+      const shuffledOptional = optional.sort(() => Math.random() - 0.5);
+      for (let tag of shuffledOptional) {
+        if (tags.join(' ').length + tag.length + 1 <= config.characterLimit) {
+          tags.push(tag);
+          if (tags.length >= required.length + 2) break; // Max 2 optional tags
+        }
+      }
+    }
     
-    return `${content} ${tags.join(' ')}`.trim();
+    return tags;
   }
 
   validateLength(content) {
-    return content.length <= config.characterLimit;
+    const isValid = content.length <= config.characterLimit;
+    if (!isValid) {
+      logger.warn('Content length validation failed', {
+        length: content.length,
+        limit: config.characterLimit,
+        excess: content.length - config.characterLimit
+      });
+    }
+    return isValid;
   }
 }

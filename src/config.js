@@ -8,7 +8,7 @@ export const config = {
     required: ['@BenjaminonIP'],
     optional: ['#IPTech', '#AI', '#STORY']
   },
-  characterLimit: 280
+  characterLimit: 180
 };
 
 export const topics = [
@@ -16,14 +16,26 @@ export const topics = [
   'AI advancement in IP',
   'STORY platform features',
   'IP innovation',
-  'Digital IP management'
+  'Digital IP management',
+  'IP tech solutions',
+  'Blockchain in IP',
+  'IP automation',
+  'IP data analytics',
+  'Smart IP contracts'
 ];
 
 export const geminiPrompt = `
-Create a short, engaging tweet about {topic}. The tweet should:
-- Be informative and professional
-- Focus on IP technology and innovation
+Create a very concise tweet about {topic}. CRITICAL REQUIREMENTS:
+- MUST be under 140 characters (strict limit, excluding tags)
+- Be informative yet brief
+- Focus on IP technology
 - Mention STORY platform when relevant
-- Be under 200 characters (to leave room for tags)
-- Not include any hashtags or handles (these will be added separately)
+- DO NOT include any hashtags or @mentions
+- Use simple, clear language
+- Include one key insight or fact
+
+Example format and length:
+"STORY platform's new AI-powered patent search reduces analysis time by 60%, making IP management more efficient for enterprises."
+
+Remember: Keep it under 140 characters! This is crucial.
 `;

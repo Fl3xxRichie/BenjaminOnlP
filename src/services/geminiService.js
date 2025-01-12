@@ -1,34 +1,37 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { PromptManager } from './promptManager.js';
+import { geminiPrompt } from '../config.js';
+import { logger } from '../logger.js';
 
 export class GeminiService {
   constructor() {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not set in environment variables');
+    }
+    
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     this.model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-    this.promptManager = new PromptManager();
   }
 
   async init() {
-    await this.promptManager.loadPrompts();
+    try {
+      // Test the API connection
+      await this.generateContent('test');
+      return true;
+    } catch (error) {
+      logger.error('Failed to initialize Gemini service', { error: error.message });
+      throw error;
+    }
   }
 
-  async generateContent(topic, promptName = 'default') {
+  async generateContent(topic) {
     try {
-      const promptTemplate = this.promptManager.getPrompt(promptName);
-      const prompt = promptTemplate.replace('{topic}', topic);
+      const prompt = geminiPrompt.replace('{topic}', topic);
       const result = await this.model.generateContent(prompt);
       const text = result.response.text();
       return text.trim();
     } catch (error) {
-      throw new Error(`Gemini API error: ${error.message}`);
+      logger.error('Gemini API error', { error: error.message });
+      throw error;
     }
-  }
-
-  async addCustomPrompt(name, prompt) {
-    return await this.promptManager.addCustomPrompt(name, prompt);
-  }
-
-  listPrompts() {
-    return this.promptManager.listPrompts();
   }
 }

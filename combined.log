@@ -1,0 +1,10 @@
+{"level":"info","message":"Received SIGINT. Gracefully shutting down...","timestamp":"2025-01-12 09:54:47"}
+{"level":"info","message":"System initialized successfully","timestamp":"2025-01-12 09:55:02"}
+{"interval":"120-300 minutes","level":"info","maxDailyPosts":25,"message":"Configuration loaded","timestamp":"2025-01-12 09:55:02"}
+{"level":"debug","message":"Generation attempt 1/3","timestamp":"2025-01-12 09:55:04"}
+{"contentLength":143,"level":"debug","limit":180,"message":"Post formatted","tagsLength":25,"timestamp":"2025-01-12 09:55:05","totalLength":169}
+{"content":"AI in IP is revolutionizing patent processing. STORY platform's AI-powered tools enhance accuracy, speed, and accessibility of patent analysis. @BenjaminonIP #IPTech #AI","length":169,"level":"debug","message":"Valid post generated","timestamp":"2025-01-12 09:55:05"}
+{"content":"AI in IP is revolutionizing patent processing. STORY platform's AI-powered tools enhance accuracy, speed, and accessibility of patent analysis. @BenjaminonIP #IPTech #AI","level":"post","message":"Generated new content","timestamp":"2025-01-12 09:55:05"}
+{"content":"AI in IP is revolutionizing patent processing. STORY platform's AI-powered tools enhance accuracy, speed, and accessibility of patent analysis. @BenjaminonIP #IPTech #AI","level":"post","message":"Tweet posted successfully","timestamp":"2025-01-12 09:55:06"}
+{"level":"info","message":"Successfully posted to Twitter","timestamp":"2025-01-12 09:55:06"}
+{"level":"info","message":"Next post scheduled","minutesFromNow":205,"scheduledFor":"1:20:24 PM","timestamp":"2025-01-12 09:55:06"}
