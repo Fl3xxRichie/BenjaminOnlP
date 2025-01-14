@@ -6,6 +6,9 @@ export class ContentFormatter {
     // First, clean and trim the content
     let cleanContent = this.cleanContent(content);
     
+   // Remove hashtags and asterisks
+   cleanContent = this.removeSpecialCharacters(cleanContent);
+
     // Get tags
     const tags = this.getPostTags();
     
@@ -42,6 +45,15 @@ export class ContentFormatter {
       .replace(/\s+/g, ' ')     // Replace multiple spaces with single space
       .replace(/[""]/g, '"')    // Normalize quotes
       .trim();
+  }
+
+  removeSpecialCharacters(content) {
+    return content
+      .replace(/#\w+/g, '')     // Remove hashtags
+      .replace(/\*/g, '')       // Remove asterisks
+      .replace(/[ \t]+/g, ' ')  // Replace multiple spaces/tabs with single space
+      .replace(/\n\s*\n\s*\n/g, '\n\n')  // Replace 3+ consecutive newlines with 2
+      .replace(/^\s+|\s+$/gm, ''); // Trim each line
   }
 
   getPostTags() {
